@@ -1,40 +1,55 @@
 const express = require('express');
 const cors = require('cors');
+const fs = require('fs');
+const path = require('path');
+const crypto = require('crypto');
 
 const app = express();
 const port = 8000;
-
-const Vigenere = require('caesar-salad').Vigenere;
+const dbPath = path.join(__dirname, 'db.json');
 
 app.use(cors());
 app.use(express.json());
 
-app.get('/', (req, res) => {
+const loadMessages = () => {
+    if (!fs.existsSync(dbPath)) return [];
+    try {
+        return JSON.parse(fs.readFileSync(dbPath, 'utf-8'));
+    } catch {
+        return [];
+    }
+};
+
+app.post('/messages', (req, res) => {
+    const { author, message } = req.body;
+
+    if (!author || !message || author.trim() === '' || message.trim() === '') {
+        return res.status(400).json({ error: 'Author and message must be present in the request' });
+    }
+
+    const messages = loadMessages();
+
+    const newMessage = {
+        id: crypto.randomUUID(),
+        author,
+        message,
+        dateTime: new Date().toISOString()
+    };
+
+    messages.push(newMessage);
+    fs.writeFileSync(dbPath, JSON.stringify(messages, null, 2));
+
+    res.status(201).json(newMessage);
+});
+
+app.get('/messages', (_req, res) => {
+    const messages = loadMessages();
+    const last30 = messages.slice(-30);
+    res.json(last30);
+});
+
+app.get('/', (_req, res) => {
     res.send('API is running');
-});
-
-app.post('/encode', (req, res) => {
-    const {password, message} = req.body;
-    if (!password || !message) {
-        return res.status(400).json({ error: 'Password and message required' });
-    }
-
-    const cipher = Vigenere.Cipher(password);
-    const encrypted = cipher.crypt(message);
-
-    res.json({ encoded: encrypted });
-});
-
-app.post('/decode', (req, res) => {
-    const {password, message} = req.body;
-    if (!password || !message) {
-        return res.status(400).json({ error: 'Password and message required' });
-    }
-
-    const decipher = Vigenere.Decipher(password);
-    const decrypted = decipher.crypt(message);
-
-    res.json({ decoded: decrypted });
 });
 
 app.listen(port, () => {

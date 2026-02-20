@@ -1,0 +1,26 @@
+[
+  {
+    "id": "a70ded11-89a6-4db2-aa8f-44fe1a0bf9a4",
+    "author": "ilia",
+    "message": "test",
+    "dateTime": "2026-02-20T15:36:08.713Z"
+  },
+  {
+    "id": "d39d0d7d-d104-46ff-87af-bc3b4bad53c5",
+    "author": "ilia",
+    "message": "test1",
+    "dateTime": "2026-02-20T15:40:32.856Z"
+  },
+  {
+    "id": "bc2a66e3-cbe3-46c3-8a29-b9bb4b1e5c79",
+    "author": "ilia",
+    "message": "test2",
+    "dateTime": "2026-02-20T15:40:39.899Z"
+  },
+  {
+    "id": "80752fe5-5f62-45e8-8cf0-4273a63edac3",
+    "author": "ilia",
+    "message": "test4",
+    "dateTime": "2026-02-20T15:50:16.885Z"
+  }
+]
