@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
+import type {RootState} from "../../app/store.ts";
 
 export interface Message {
     id: string;
@@ -20,10 +21,22 @@ const initialState: MessagesState = {
     error: false,
 };
 
-export const fetchMessages = createAsyncThunk(
+export const fetchMessages = createAsyncThunk<
+    Message[],
+    void,
+    { state: RootState }
+>(
     'messages/fetch',
-    async () => {
-        const response = await axios.get<Message[]>('http://localhost:8000/messages');
+    async (_, { getState }) => {
+        const state = getState();
+        const lastMessage = state.messages.items.at(-1);
+        const lastDate = lastMessage?.dateTime;
+
+        const url = lastDate
+            ? `http://localhost:8000/messages?datetime=${lastDate}`
+            : 'http://localhost:8000/messages';
+
+        const response = await axios.get<Message[]>(url);
         return response.data;
     }
 );
@@ -51,7 +64,14 @@ const messagesSlice = createSlice({
             })
             .addCase(fetchMessages.fulfilled, (state, action) => {
                 state.loading = false;
-                state.items = action.payload;
+
+                const existingIds = new Set(state.items.map(m => m.id));
+
+                const newMessages = action.payload.filter(
+                    msg => !existingIds.has(msg.id)
+                );
+
+                state.items.push(...newMessages);
             })
             .addCase(fetchMessages.rejected, (state) => {
                 state.loading = false;

@@ -42,8 +42,24 @@ app.post('/messages', (req, res) => {
     res.status(201).json(newMessage);
 });
 
-app.get('/messages', (_req, res) => {
+app.get('/messages', (req, res) => {
     const messages = loadMessages();
+    const { datetime } = req.query;
+
+    if (datetime) {
+        const date = new Date(datetime);
+
+        if (isNaN(date.getTime())) {
+            return res.status(400).json({ error: 'Invalid datetime format' });
+        }
+
+        const filtered = messages.filter(msg =>
+            new Date(msg.dateTime) > date
+        );
+
+        return res.json(filtered);
+    }
+
     const last30 = messages.slice(-30);
     res.json(last30);
 });
